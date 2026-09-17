@@ -31,16 +31,13 @@ class CricketGameScreen extends StatefulWidget {
 class _CricketGameScreenState extends State<CricketGameScreen> {
   int balls = 6;
   int totalRuns = 0;
-  int currentRun = 0; // Starts at 0
+  int? currentRun;
 
   void _playBall() {
     if (balls > 0) {
       setState(() {
-        // 1. Generate the random run for THIS ball (0 to 6)
         currentRun = Random().nextInt(7);
-        // 2. Add it to the accumulated total
-        totalRuns += currentRun;
-        // 3. Reduce the ball count
+        totalRuns += currentRun!;
         balls--;
       });
     }
@@ -50,14 +47,15 @@ class _CricketGameScreenState extends State<CricketGameScreen> {
     setState(() {
       balls = 6;
       totalRuns = 0;
-      currentRun = 0;
+      currentRun = null;
     });
   }
 
-  // Shows the accumulated total in the middle section
-  String _getTotalMessage() {
-    if (balls == 6 && totalRuns == 0) return ''; // Empty before first click
-    return 'Total: $totalRuns Runs';
+  String _getRunMessage() {
+    if (currentRun == null) return '';
+    if (currentRun == 0) return 'No Runs';
+    if (currentRun == 1) return '1 Run';
+    return '$currentRun Runs';
   }
 
   @override
@@ -71,28 +69,30 @@ class _CricketGameScreenState extends State<CricketGameScreen> {
         elevation: 0,
       ),
       body: Center(
+        // Main Column referencing the extracted methods
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildImageRow(),
+            _buildImageRow(),          // Image -> Row(I1, I2)
             const SizedBox(height: 30),
             
-            _buildLabelRow(),
+            _buildLabelRow(),          // Text -> Row(T1, T2)
             const SizedBox(height: 10),
             
-            _buildValueRow(),
-            const SizedBox(height: 40),
+            _buildValueRow(),          // Value -> Row(V1, V2)
+            const SizedBox(height: 30),
             
-            _buildMessageText(), 
-            const SizedBox(height: 15),
+            _buildMessageText(),       // R & L -> Text()
+            const SizedBox(height: 20),
             
-            _buildActionButton(),
+            _buildActionButton(),      // Button -> if ter
           ],
         ),
       ),
     );
   }
 
+  // 1. Image -> Row(I1, I2)
   Widget _buildImageRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -103,6 +103,7 @@ class _CricketGameScreenState extends State<CricketGameScreen> {
     );
   }
 
+  // 2. Text -> Row(T1, T2)
   Widget _buildLabelRow() {
     return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -113,53 +114,47 @@ class _CricketGameScreenState extends State<CricketGameScreen> {
     );
   }
 
+  // 3. Value -> Row(V1, V2)
   Widget _buildValueRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Displays the random run for the CURRENT ball
-        Text('$currentRun', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
+        Text('$totalRuns', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
         Text('$balls', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
       ],
     );
   }
 
+  // 4. Message -> Text()
   Widget _buildMessageText() {
-    return SizedBox(
-      height: 25,
-      child: Text(
-        _getTotalMessage(), // Displays the running total
-        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-      ),
+    return Text(
+      _getRunMessage(),
+      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
     );
   }
 
+  // 5. Button -> if ter (Ternary logic for Bat/Restart)
   Widget _buildActionButton() {
     return balls > 0
         ? ElevatedButton(
             onPressed: _playBall,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0053A3),
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
             ),
-            child: const Text('Bat', style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Bat', style: TextStyle(fontSize: 18, color: Colors.white)),
           )
         : ElevatedButton(
             onPressed: _restartGame,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0),
-              ),
             ),
-            child: const Text('Restart', style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Restart', style: TextStyle(fontSize: 18, color: Colors.white)),
           );
   }
 
+  // Helper widget for the image squares
   Widget _buildImageContainer(String imagePath) {
     return Container(
       width: 120,
